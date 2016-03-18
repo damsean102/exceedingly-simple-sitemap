@@ -108,6 +108,8 @@ function ess_html_sitemap() {
 
 	$allPosts = get_posts( $args );
 
+	$html = '';
+
 	if ($allPosts):
 
 		$html = "<div class='ess-sitemap'><ul>";

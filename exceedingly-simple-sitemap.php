@@ -86,3 +86,43 @@ add_action("save_post", "save_ess_metabox", 10, 3);
 /*
 * GENERATE SITEMAPS
 */
+
+//Create an array or comma separated list of pages that have the tick box clicked
+// 'meta_key'   => 'ess-checkbox',
+// 'meta_value' => 'true'
+
+//Create XML sitemap - http://www.sitemaps.org/protocol.html
+
+//Create a shortcode for HTML sitempa
+function ess_html_sitemap() {
+	global $post;
+
+	// Build list of pages where ess-checkbox doesn't equal true
+	$args = array(
+		'posts_per_page'  => -1,
+		'post_type'				=> array('page'),
+		'post_status'			=> 'publish',
+		'title_li'  			=> '',
+		'orderby' 				=> 'menu_order, post_title',
+		'order' 					=> 'ASC',
+		'meta_key'				=> 'ess-checkbox',
+		'meta_value'			=> 'true',
+		'meta_compare'		=> '!='
+	);
+
+	$allPosts = get_posts( $args );
+
+	$html = "<div class='ess-sitemap'><ul>";
+	foreach ($allPosts as $post):
+
+		$html .= "<li><a href='" . get_permalink($page->ID) . "'>" . get_the_title($page->ID) . "</a></li>";
+
+	endforeach;
+	$html .= "</ul></div>";
+
+
+	return $html;
+
+}
+
+add_shortcode('ess-sitemap', 'ess_html_sitemap');

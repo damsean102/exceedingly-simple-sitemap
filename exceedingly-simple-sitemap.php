@@ -87,9 +87,8 @@ add_action("save_post", "save_ess_metabox", 10, 3);
 * GENERATE SITEMAPS
 */
 
-//Create XML sitemap - http://www.sitemaps.org/protocol.html
 
-//Create a shortcode for HTML sitempa
+//Create a shortcode for HTML sitemap
 function ess_html_sitemap() {
 	global $post;
 
@@ -128,3 +127,116 @@ function ess_html_sitemap() {
 }
 
 add_shortcode('ess-sitemap', 'ess_html_sitemap');
+
+
+//Create XML sitemap - http://www.sitemaps.org/protocol.html, http://stackoverflow.com/questions/2038535/create-new-xml-file-and-write-data-to-it
+
+
+add_action( 'init', 'ess_xml_sitemap' ); // EVENTUALLY change this to work on save_post action, NOT INIT
+function ess_xml_sitemap() {
+		global $wp_query;
+
+    /*
+    TASKS
+    1. Check if sitemap file exists
+    2. If so destroy it.
+    3. Create the new XML file and save it
+    */
+
+    //$root = get_home_path();
+    $root = get_bloginfo('site_url') . 'sitemap.xml';
+
+    $sitemap = new DOMDocument("1.0", "UTF-8");
+
+    //Settings
+    $sitemap->formatOutput = TRUE;
+
+    //Creat URLSET element and add in any attributes
+		$urlset = $sitemap->createElement("urlset");
+		$urlset->setAttribute("xmlns", "http://www.sitemaps.org/schemas/sitemap/0.9");
+
+		//START LOOP HERE
+
+		//Create a URL Element
+		$url = $sitemap->createElement("url");
+
+		$loc = $sitemap->createElement("loc", "http://PERMALINK-GOES-HERE");
+		$lastMod = $sitemap->createElement("lastmod", "PUBLISH DATE GOES HERE");
+		$changefreq = $sitemap->createElement("changefreq", "WORK OUT CHANGE FREQUENCY");
+		$priority = $sitemap->createElement("priority", "Priority - Poss. just ignore");
+
+		//Add these elements to the URL element
+		$url->appendChild($loc);
+		$url->appendChild($lastMod);
+		$url->appendChild($changefreq);
+		$url->appendChild($priority);
+
+		//Add it to the URLSET
+		$urlset->appendChild($url);
+
+		//END LOOP HERE
+
+		//ADD THE URLSET to the XML
+		$sitemap->appendChild($urlset);
+
+		$sitemap->save($root);
+
+
+
+		/*
+		EXAMPLE XML STRUCTURE
+		<?xml version="1.0" encoding="UTF-8"?>
+			<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+			   <url>
+
+			      <loc>http://www.example.com/</loc>
+
+			      <lastmod>2005-01-01</lastmod>
+
+			      <changefreq>monthly</changefreq>
+
+			      <priority>0.8</priority>
+
+			   </url>
+
+			   <url>
+
+			      <loc>http://www.example.com/catalog?item=12&amp;desc=vacation_hawaii</loc>
+
+			      <changefreq>weekly</changefreq>
+
+			   </url>
+
+			   <url>
+
+			      <loc>http://www.example.com/catalog?item=73&amp;desc=vacation_new_zealand</loc>
+
+			      <lastmod>2004-12-23</lastmod>
+
+			      <changefreq>weekly</changefreq>
+
+			   </url>
+
+			   <url>
+
+			      <loc>http://www.example.com/catalog?item=74&amp;desc=vacation_newfoundland</loc>
+
+			      <lastmod>2004-12-23T18:00:15+00:00</lastmod>
+
+			      <priority>0.3</priority>
+
+			   </url>
+
+			   <url>
+
+			      <loc>http://www.example.com/catalog?item=83&amp;desc=vacation_usa</loc>
+
+			      <lastmod>2004-11-23</lastmod>
+
+			   </url>
+
+			</urlset>
+
+		*/
+}

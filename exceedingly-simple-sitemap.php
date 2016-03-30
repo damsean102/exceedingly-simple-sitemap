@@ -1,12 +1,6 @@
 <?php
 
 /**
- * The plugin bootstrap file
- *
- * This file is read by WordPress to generate the plugin information in the plugin
- * admin area. This file also includes all of the dependencies used by the plugin,
- * registers the activation and deactivation functions, and defines a function
- * that starts the plugin.
  *
  * @link              http://samdean.co.uk/
  * @since             1.0.0
@@ -129,114 +123,72 @@ function ess_html_sitemap() {
 add_shortcode('ess-sitemap', 'ess_html_sitemap');
 
 
-//Create XML sitemap - http://www.sitemaps.org/protocol.html, http://stackoverflow.com/questions/2038535/create-new-xml-file-and-write-data-to-it
+//Create XML sitemap - http://www.sitemaps.org/protocol.html
 
-
-add_action( 'init', 'ess_xml_sitemap' ); // EVENTUALLY change this to work on save_post action, NOT INIT
+add_action( 'save_post', 'ess_xml_sitemap' );
 function ess_xml_sitemap() {
-		global $wp_query;
+		global $post;
 
-    /*
-    TASKS
-    1. Check if sitemap file exists
-    2. If so destroy it.
-    3. Create the new XML file and save it
-    */
+		$sitemapURL = ABSPATH . 'sitemap.xml';
 
-    //$root = get_home_path();
-    $root = get_bloginfo('site_url') . 'sitemap.xml';
+		// Build list of pages where 'ess-checkbox' metabox doesn't equal true
+		$args = array(
+			'posts_per_page'  => -1,
+			'post_type'				=> array('page'),
+			'post_status'			=> 'publish',
+			'title_li'  			=> '',
+			'orderby' 				=> 'menu_order, post_title',
+			'order' 					=> 'ASC',
+			'meta_key'				=> 'ess-checkbox',
+			'meta_value'			=> 'true',
+			'meta_compare'		=> '!='
+		);
 
-    $sitemap = new DOMDocument("1.0", "UTF-8");
+		$allPosts = get_posts( $args );
 
-    //Settings
-    $sitemap->formatOutput = TRUE;
+    if ($allPosts):
 
-    //Creat URLSET element and add in any attributes
-		$urlset = $sitemap->createElement("urlset");
-		$urlset->setAttribute("xmlns", "http://www.sitemaps.org/schemas/sitemap/0.9");
+	    $sitemap = new DOMDocument("1.0", "UTF-8");
 
-		//START LOOP HERE
+	    //Settings
+	    $sitemap->formatOutput = TRUE;
 
-		//Create a URL Element
-		$url = $sitemap->createElement("url");
+	    //Creat URLSET element and add in any attributes
+			$urlset = $sitemap->createElement("urlset");
+			$urlset->setAttribute("xmlns", "http://www.sitemaps.org/schemas/sitemap/0.9");
 
-		$loc = $sitemap->createElement("loc", "http://PERMALINK-GOES-HERE");
-		$lastMod = $sitemap->createElement("lastmod", "PUBLISH DATE GOES HERE");
-		$changefreq = $sitemap->createElement("changefreq", "WORK OUT CHANGE FREQUENCY");
-		$priority = $sitemap->createElement("priority", "Priority - Poss. just ignore");
+			//START LOOP HERE
+			foreach ($allPosts as $post):
 
-		//Add these elements to the URL element
-		$url->appendChild($loc);
-		$url->appendChild($lastMod);
-		$url->appendChild($changefreq);
-		$url->appendChild($priority);
+				//Get Values for Elements
+				$locValue = get_permalink($post->ID);
+				$lastModValue = get_the_modified_date('Y-m-d');
+				$priorityValue = '0.5';
 
-		//Add it to the URLSET
-		$urlset->appendChild($url);
+				//Create a Elements
+				$url = $sitemap->createElement("url");
+				$loc = $sitemap->createElement("loc", $locValue);
+				$lastMod = $sitemap->createElement("lastmod", $lastModValue);
+				//$changefreq = $sitemap->createElement("changefreq", "WORK OUT CHANGE FREQUENCY");
+				$priority = $sitemap->createElement("priority", $priorityValue);
 
-		//END LOOP HERE
+				//Add these elements as children to the URL element
+				$url->appendChild($loc);
+				$url->appendChild($lastMod);
+				//$url->appendChild($changefreq);
+				$url->appendChild($priority);
 
-		//ADD THE URLSET to the XML
-		$sitemap->appendChild($urlset);
+				//Add it to the URLSET
+				$urlset->appendChild($url);
 
-		$sitemap->save($root);
+			endforeach;
 
+			//ADD THE URLSET to the XML
+			$sitemap->appendChild($urlset);
 
+			//Create
+			$sitemap->save($sitemapURL);
 
-		/*
-		EXAMPLE XML STRUCTURE
-		<?xml version="1.0" encoding="UTF-8"?>
-			<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+		endif; //allposts
 
-			   <url>
-
-			      <loc>http://www.example.com/</loc>
-
-			      <lastmod>2005-01-01</lastmod>
-
-			      <changefreq>monthly</changefreq>
-
-			      <priority>0.8</priority>
-
-			   </url>
-
-			   <url>
-
-			      <loc>http://www.example.com/catalog?item=12&amp;desc=vacation_hawaii</loc>
-
-			      <changefreq>weekly</changefreq>
-
-			   </url>
-
-			   <url>
-
-			      <loc>http://www.example.com/catalog?item=73&amp;desc=vacation_new_zealand</loc>
-
-			      <lastmod>2004-12-23</lastmod>
-
-			      <changefreq>weekly</changefreq>
-
-			   </url>
-
-			   <url>
-
-			      <loc>http://www.example.com/catalog?item=74&amp;desc=vacation_newfoundland</loc>
-
-			      <lastmod>2004-12-23T18:00:15+00:00</lastmod>
-
-			      <priority>0.3</priority>
-
-			   </url>
-
-			   <url>
-
-			      <loc>http://www.example.com/catalog?item=83&amp;desc=vacation_usa</loc>
-
-			      <lastmod>2004-11-23</lastmod>
-
-			   </url>
-
-			</urlset>
-
-		*/
 }

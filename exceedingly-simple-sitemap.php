@@ -140,8 +140,6 @@ class ess_sitemap {
 
 	}
 
-	//$posts = ess_get_all_posts();
-
 	//Create a shortcode for HTML sitemap
 	function ess_html_sitemap($posts) {
 		

@@ -35,7 +35,7 @@ class ess_sitemap {
 		//Create the Shotcode
 		add_shortcode('ess-sitemap', array($this, 'ess_html_sitemap'));
 		//Create XML sitemap
-		add_action('init', array($this,'ess_xml_sitemap'));
+		add_action('save_post', array($this,'ess_xml_sitemap'));
 	}
 
 

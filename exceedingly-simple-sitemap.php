@@ -27,9 +27,14 @@ class ess_sitemap {
 	*/
 	
 	function __construct(){
+
+		//Create Admin settings section/page
+		// add_action("admin_init", array($this, "wporg_settings_api_init"));
+		add_action("admin_menu", array($this, "ess_create_settings_page"));
+
 		//Create Admin metabox
 		add_action("add_meta_boxes", array($this, "create_ess_metabox"));
-		//When post is saved, save the meta data
+		//When a post is saved, save the meta data
 		add_action("save_post", array($this, "save_ess_metabox"), 10, 3);
 
 		//Create the Shotcode
@@ -40,8 +45,56 @@ class ess_sitemap {
 
 
 	/*
-	* ADMIN FUNCTIONS - Create and save metabox information
+	* ADMIN FUNCTIONS - 
 	*/
+
+	//Create admin area settings page
+	function ess_create_settings_page() {
+	    add_options_page(
+	        'Exceedingly Simple Sitemap', 
+	        'ESS settings',
+	        'manage_options',
+	        'ess-sitemap',
+	        array($this, 'ess_create_settings_form')
+	    );
+	}
+
+// 	function wporg_settings_api_init() {
+// // Add the section to reading settings so we can add our fields to it
+// add_settings_section(
+// 'wporg_setting_section',
+// 'Example settings section in reading',
+// 'wporg_setting_section_callback_function',
+// 'ess-sitemap'
+// );
+ 
+// // Add the field with the names and function to use for our new settings, put it in our new section
+// add_settings_field(
+// 'wporg_setting_name',
+// 'Example setting Name',
+// 'wporg_setting_callback_function',
+// 'ess-sitemap',
+// 'wporg_setting_section'
+// );
+ 
+// // Register our setting in the "reading" settings section
+// register_setting( 'ess-sitemap', 'wporg_setting_name' );
+// }
+ 
+
+
+
+	function ess_create_settings_form() { ?>
+		<div class="wrap">
+			<h2>Exceedingly Simple Sitemap - Settings</h2>
+			<p>Please select the post types that you would like to add the sitemap box to.</p>
+		</div>
+	<?php
+	}
+
+
+
+	//Create and save metabox information
 
 	function ess_metabox_markup($object) {
 
